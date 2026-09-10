@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WeatherOS — Personalized Weather Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+:root{
+  --bg:#f5f5f5;
+  --panel:#ffffff;
+  --panel2:#fafafa;
+  --ink:#161616;
+  --muted:#6b6b6b;
+  --line:#dddddd;
+  --accent:#111111;
+  --accent2:#444444;
+  --cyan:#5c7a7a;
+  --green:#3f6b45;
+  --amber:#9a6a20;
+  --red:#a33b36;
+  --shadow:0 3px 12px rgba(0,0,0,.06);
+  --radius:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer;border:0}
+.app-shell{display:flex;min-height:100vh}
+.sidebar{
+  width:260px;background:#111;color:#eee;padding:24px 16px 18px;
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh
+}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 18px}
+.brand-mark{
+  height:38px;width:38px;border-radius:8px;background:#fff;
+  display:grid;place-items:center;font-weight:800;color:#111;font-size:20px
+}
+.brand-name{font:700 18px Arial,sans-serif;color:#fff}
+.brand-tag{font-size:9px;letter-spacing:1px;color:#a7a7a7;margin-top:3px}
+.prototype-badge{
+  margin:6px 8px 18px;padding:7px 10px;border:1px solid #333;
+  border-radius:8px;font-size:10px;color:#bdbdbd;background:#1b1b1b
+}
+.dot,.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#7fbd86;margin-right:7px}
+.nav{display:grid;gap:5px}
+.nav-item{
+  display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto auto;
+  align-items:center;text-align:left;padding:11px;border-radius:9px;
+  background:transparent;color:#aaa
+}
+.nav-item span{grid-row:1/3;font-size:19px;align-self:center}
+.nav-item b{font-size:12px;color:#eee}
+.nav-item small{font-size:9px;color:#777;margin-top:2px}
+.nav-item.active,.nav-item:hover{background:#222;color:#fff}
+.nav-item.active{box-shadow:inset 2px 0 #fff}
+.sidebar-bottom{margin-top:auto}
+.tour-btn{width:100%;padding:11px;border-radius:9px;background:#fff;color:#111;font-weight:700;font-size:11px}
+.system-status{margin-top:14px;padding:11px;border-top:1px solid #303030;font-size:9px;color:#999}
+.version{display:block;margin-top:5px;color:#666}
+
+.main{flex:1;padding:26px 34px 46px;max-width:1500px;margin:0 auto;width:calc(100% - 260px)}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.eyebrow,.section-kicker{font-size:9px;letter-spacing:1.3px;font-weight:800;color:#777}
+.topbar h1{font:700 26px Arial,sans-serif;margin:6px 0 0;letter-spacing:-.4px}
+.top-actions{display:flex;align-items:center;gap:8px}
+.location-chip,.icon-btn,.avatar-btn{background:#fff;border:1px solid var(--line);box-shadow:none}
+.location-chip{padding:10px 12px;border-radius:9px;color:#444;font-size:11px}
+.icon-btn,.avatar-btn{height:40px;border-radius:9px;position:relative}
+.icon-btn{width:40px}.avatar-btn{min-width:64px;padding:0 12px;background:#111;color:#fff;border:0;font-weight:700}
+.notif-pip{position:absolute;top:7px;right:7px;height:5px;width:5px;border-radius:50%;background:#111}
+
+.hero-grid{display:grid;grid-template-columns:1.25fr .95fr;gap:16px}
+.hero-card,.priority-card,.panel,.widget,.decision-strip>div{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)
+}
+.hero-card{background:#111;color:#fff;padding:24px}
+.hero-top{display:flex;justify-content:space-between;align-items:center}
+.live-pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:8px;letter-spacing:1px;
+  padding:5px 8px;border-radius:6px;background:#222;border:1px solid #333;font-weight:800
+}
+.live-pill i{height:5px;width:5px;background:#aaa;border-radius:50%}
+.hero-card h2{font:700 64px Arial,sans-serif;margin:18px 0 1px;letter-spacing:-3px}
+.hero-card h2 span{font-size:20px;letter-spacing:0;vertical-align:top;margin-left:4px}
+.condition{font-weight:600;margin:0 0 4px}
+.muted{color:#aaa;font-size:11px;margin:0}
+.sun-orbit{height:110px;width:110px;border-radius:50%;display:grid;place-items:center;position:relative}
+.sun-core{font-size:48px;filter:none}.orbit-ring{position:absolute;inset:8px;border:1px dashed #555;border-radius:50%}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:24px}
+.hero-stats div{background:#1b1b1b;border:1px solid #292929;padding:10px 11px;border-radius:8px}
+.hero-stats span{display:block;color:#999;font-size:9px}.hero-stats b{display:block;margin-top:3px;font-size:11px}
+.warning{color:#d3a24c}
+
+.priority-card{padding:24px;display:flex;flex-direction:column;justify-content:space-between}
+.card-kicker{font-size:9px;letter-spacing:1.3px;font-weight:800;color:#777}
+.priority-main{display:flex;gap:13px;align-items:flex-start;margin:17px 0}
+.priority-icon{height:48px;width:48px;border-radius:11px;background:#f0f0f0;display:grid;place-items:center;font-size:24px}
+.priority-main h3{margin:0 0 7px;font:700 18px Arial,sans-serif;line-height:1.25}
+.priority-main p{margin:0;color:#666;line-height:1.5;font-size:11px}
+.priority-footer{display:flex;justify-content:space-between;align-items:center}
+.confidence{font-size:9px;color:#666}.confidence span{display:inline-block;width:5px;height:5px;border-radius:50%;background:#4f8b57;margin-right:5px}
+.primary,.ghost-btn,.danger-btn,.text-btn{border-radius:8px;padding:10px 12px;font-weight:700;font-size:11px}
+.primary{background:#111;color:#fff;box-shadow:none}.primary.small{padding:8px 10px}
+.ghost-btn{background:#fff;border:1px solid #ccc;color:#333}.ghost-btn:hover{background:#f7f7f7}
+.danger-btn{background:#f3e7e5;border:1px solid #d8b8b4;color:#8c322d}
+.text-btn{background:transparent;color:#111;padding:0}
+
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;margin:26px 0 11px}
+.section-head h2,.view-intro h2{font:700 20px Arial,sans-serif;margin:4px 0 0;letter-spacing:-.2px}
+.insight-banner{display:flex;align-items:center;gap:10px;border:1px solid #d9d9d9;background:#fafafa;padding:11px 12px;border-radius:9px;margin-bottom:12px}
+.banner-icon{height:28px;width:28px;border-radius:7px;background:#ededed;color:#111;display:grid;place-items:center;font-weight:700}
+.insight-banner div:nth-child(2){flex:1;font-size:10px}.insight-banner strong{margin-right:6px}.insight-banner span{color:#666}
+
+.widget-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.widget{padding:16px;min-height:158px;transition:transform .15s,border .15s}
+.widget:hover{transform:translateY(-1px);border-color:#c6c6c6}
+.widget.primary-widget{grid-column:span 2;min-height:174px}
+.widget-head{display:flex;justify-content:space-between;align-items:center}
+.widget-icon{height:34px;width:34px;border-radius:9px;background:#f0f0f0;display:grid;place-items:center;font-size:17px}
+.score-pill{font-size:8px;padding:4px 6px;border-radius:5px;background:#f2f2f2;color:#666;font-weight:800}
+.widget h3{margin:11px 0 5px;font:700 14px Arial,sans-serif}
+.widget p{margin:0;color:#666;font-size:10px;line-height:1.5}
+.widget-action{margin-top:11px;color:#111;font-size:9px;font-weight:800}
+.mini-bar{height:4px;border-radius:99px;background:#e7e7e7;overflow:hidden;margin-top:9px}.mini-bar i{display:block;height:100%;background:#444;border-radius:99px}
+
+.view{display:none}.view.active-view{display:block}
+.view-intro{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px}
+.view-intro p{margin:6px 0 0;color:#666;max-width:760px;font-size:11px}
+.decision-strip{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:11px;margin-bottom:16px}
+.decision-strip>div{padding:16px}.decision-strip span{display:block;color:#777;font-size:9px;text-transform:uppercase;letter-spacing:1px}
+.decision-strip strong{display:block;margin-top:7px;font:700 15px Arial,sans-serif}
+.decision-strip small{display:block;margin-top:4px;color:#777;font-size:9px}
+.decision-hero{background:#111!important;color:#fff}.decision-hero span,.decision-hero small{color:#aaa!important}
+.timeline{display:grid;gap:9px}
+.timeline-item{display:grid;grid-template-columns:88px 36px 1fr auto;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 14px}
+.time{font-size:10px;font-weight:800;color:#555}.time-icon{height:32px;width:32px;border-radius:8px;background:#f1f1f1;display:grid;place-items:center}
+.timeline-item h4{margin:0 0 2px;font-size:12px}.timeline-item p{margin:0;color:#777;font-size:9px}.timeline-action{font-size:9px;font-weight:800;color:#111;text-align:right}
+
+.engine-map{display:grid;grid-template-columns:1fr 26px 1fr 26px 1fr 26px 1fr;gap:6px;align-items:center;margin-bottom:16px}
+.engine-node{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;min-height:104px}
+.engine-node.accent{border-color:#bbb;background:#f7f7f7}
+.engine-node span{display:block;font-size:8px;color:#888;font-weight:800;letter-spacing:1px}
+.engine-node b{display:block;font:700 13px Arial,sans-serif;margin-top:7px}
+.engine-node small{display:block;color:#777;font-size:9px;line-height:1.45;margin-top:4px}
+.engine-arrow{text-align:center;font-size:18px;color:#999}
+
+.insight-columns{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.panel{padding:16px}.panel-title{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:10px;margin-bottom:12px}
+.live-pill.tiny{font-size:7px;padding:3px 5px;background:#f1f1f1;color:#555;border-color:#ddd}
+.rank-row{display:grid;grid-template-columns:105px 1fr 30px;gap:9px;align-items:center;margin:10px 0}
+.rank-row label{font-size:9px}.rank-track{height:7px;border-radius:99px;background:#e8e8e8;overflow:hidden}.rank-track i{display:block;height:100%;background:#444;border-radius:99px}
+.rank-score{font-size:9px;color:#666;text-align:right;font-weight:800}
+.override-badge{font-size:8px;padding:4px 6px;border-radius:5px;background:#eee;color:#666}
+.override-content{display:flex;gap:11px;padding:11px;background:#fafafa;border-radius:9px;border:1px solid #e5e5e5}
+.shield{height:38px;width:38px;border-radius:9px;background:#efefef;display:grid;place-items:center;font-size:18px}
+.override-content h3{margin:2px 0 4px;font:700 13px Arial,sans-serif}.override-content p{margin:0;color:#777;font-size:9px;line-height:1.45}.full{width:100%;margin-top:11px}
+
+.profile-layout{display:grid;grid-template-columns:1.15fr .85fr;gap:13px}
+.profile-card-main{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.profile-header{display:flex;align-items:center;gap:11px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.profile-avatar{height:46px;width:46px;border-radius:11px;background:#111;color:#fff;display:grid;place-items:center;font-weight:800}
+.profile-header h3{margin:0;font:700 16px Arial,sans-serif}.profile-header p{margin:3px 0 0;font-size:9px;color:#777}
+.adaptive-badge{margin-left:auto;font-size:9px;color:#3f6b45;background:#f0f5f0;border:1px solid #ceddce;padding:5px 7px;border-radius:6px}
+.preference-group{margin-top:18px}.preference-group>label{font-size:10px;font-weight:800;color:#444;display:block;margin-bottom:9px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.persona-chip{padding:8px 9px;border-radius:7px;border:1px solid #d8d8d8;background:#fff;font-size:9px;font-weight:700;color:#555}
+.persona-chip.active{background:#111;border-color:#111;color:#fff}
+.toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:9px;color:#444}
+.toggle-row input{display:none}.toggle-row i{height:19px;width:32px;border-radius:99px;background:#ddd;position:relative;transition:.2s}
+.toggle-row i:before{content:'';height:13px;width:13px;background:#fff;border-radius:50%;position:absolute;left:3px;top:3px;box-shadow:0 1px 3px rgba(0,0,0,.1);transition:.2s}
+.toggle-row input:checked+i{background:#111}.toggle-row input:checked+i:before{left:16px}
+
+.profile-side{display:grid;gap:13px}.adaptive-panel .memory-row{margin:11px 0}.memory-row{font-size:9px}.memory-row span{float:right;color:#777}
+.meter{height:4px;background:#e8e8e8;border-radius:99px;margin-top:6px;overflow:hidden;clear:both}.meter i{display:block;height:100%;background:#555;border-radius:99px}
+.small-note{font-size:8px;line-height:1.5;color:#888;margin:10px 0 0}
+.preset-list{display:grid;grid-template-columns:1fr 1fr;gap:7px}.preset-list button{padding:10px;text-align:left;background:#fafafa;border:1px solid #ddd;border-radius:8px;font-size:9px;color:#555}.preset-list button:hover{border-color:#bbb;background:#f5f5f5}
+
+.toast{position:fixed;right:24px;bottom:24px;transform:translateY(140px);opacity:0;background:#111;color:#fff;padding:11px 13px;border-radius:9px;display:flex;gap:9px;align-items:center;box-shadow:0 12px 25px rgba(0,0,0,.15);transition:.25s;z-index:30}
+.toast.show{transform:translateY(0);opacity:1}.toast>span{height:26px;width:26px;border-radius:7px;background:#555;display:grid;place-items:center;font-weight:800}.toast b{display:block;font-size:10px}.toast small{display:block;color:#aaa;font-size:8px;margin-top:2px}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.48);backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;padding:20px}
+.modal-backdrop.hidden{display:none}.modal{max-width:650px;background:#fff;border-radius:13px;padding:28px;position:relative;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.modal-close{position:absolute;right:12px;top:10px;height:32px;width:32px;border-radius:7px;background:#eee;color:#555;font-size:19px}
+.modal h2{font:700 26px Arial,sans-serif;margin:7px 0}.modal-lead{color:#666;font-size:11px;line-height:1.5}
+.tour-steps{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+.tour-steps>div{padding:13px;border:1px solid #ddd;border-radius:9px;background:#fafafa}
+.tour-steps span{display:block;color:#888;font-size:8px;font-weight:800}.tour-steps b{display:block;margin-top:5px;font:700 13px Arial,sans-serif}.tour-steps small{display:block;color:#777;margin-top:4px;font-size:9px;line-height:1.4}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+.severe-mode .hero-card{background:#2a1817}
+.severe-mode .priority-card{border-color:#d5b4af}
+.severe-mode .priority-icon{background:#f1dfdc}
+.severe-mode .priority-main h3{color:#963731}
+.severe-mode .insight-banner{background:#faf1ef;border-color:#e1c4bf}
+.severe-mode .insight-banner .banner-icon{background:#ead5d1;color:#963731}
+.severe-mode .override-badge{background:#f1dfdc;color:#963731}
+.severe-mode .override-content{background:#fbf3f1;border-color:#e2c8c3}
+.severe-mode .override-content .shield{background:#edd8d3}
+.severe-mode .storm-btn{display:none}
+
+@media (max-width:1100px){
+  .sidebar{width:210px}.main{width:calc(100% - 210px);padding:22px}
+  .hero-grid,.profile-layout,.insight-columns{grid-template-columns:1fr}
+  .widget-grid{grid-template-columns:1fr 1fr}.widget.primary-widget{grid-column:span 2}
+  .engine-map{grid-template-columns:1fr 22px 1fr}
+  .engine-map .engine-node:nth-of-type(n+5),.engine-map .engine-arrow:nth-of-type(n+6){display:none}
+}
+@media (max-width:760px){
+  .sidebar{position:fixed;left:0;bottom:0;right:0;top:auto;width:100%;height:auto;padding:7px;z-index:20;display:block}
+  .brand,.prototype-badge,.sidebar-bottom{display:none}
+  .nav{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+  .nav-item{grid-template-columns:1fr;text-align:center;padding:7px 3px}
+  .nav-item span{grid-row:auto;font-size:17px}.nav-item b{font-size:8px}.nav-item small{display:none}
+  .main{width:100%;padding:18px 13px 78px}.topbar h1{font-size:21px}.top-actions .location-chip{display:none}
+  .hero-stats{grid-template-columns:1fr 1fr}.widget-grid{grid-template-columns:1fr}.widget.primary-widget{grid-column:auto}
+  .decision-strip{grid-template-columns:1fr}.engine-map{grid-template-columns:1fr}.engine-arrow{display:none}
+  .toggle-grid,.tour-steps{grid-template-columns:1fr}.view-intro{align-items:flex-start;gap:11px;flex-direction:column}
+  .profile-layout{grid-template-columns:1fr}.toast{right:13px;bottom:72px}
+}
+</style>
+<style id="profile-o-icon-style">
+.profile-o-icon{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-weight:700;margin-right:8px;vertical-align:middle;}
+</style></head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">W</div>
+        <div>
+          <div class="brand-name">WeatherOS</div>
+          <div class="brand-tag">PERSONAL WEATHER INTELLIGENCE</div>
+        </div>
+      </div>
+
+      <div class="prototype-badge">
+        <span class="dot"></span>
+        Interactive prototype
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="home"><span>⌂</span><b>Today</b><small>Personal feed</small></button>
+        <button class="nav-item" data-view="planner"><span>◫</span><b>Day Planner</b><small>Forecast → action</small></button>
+        <button class="nav-item" data-view="insights"><span>✦</span><b>Smart Insights</b><small>Why the app changed</small></button>
+        <button class="nav-item" data-view="profile"><span>◌</span><b>My Profile</b><small>Adaptive preferences</small></button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="tour-btn" id="tourBtn">▶ 90-sec interview tour</button>
+        <div class="system-status">
+          <div><span class="status-dot"></span> Personalization engine online</div>
+          <span class="version">v0.9 prototype</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow" id="pageEyebrow">PERSONAL WEATHER OPERATING SYSTEM</div>
+          <h1 id="pageTitle">Good evening, User.</h1>
+        </div>
+        <div class="top-actions">
+          <button class="location-chip" id="locationBtn">⌖ Solapur, Maharashtra <span>▾</span></button>
+          <button class="icon-btn" id="notifBtn" aria-label="Notifications">◔<span class="notif-pip"></span></button>
+          <button class="avatar-btn" id="avatarBtn">User</button>
+        </div>
+      </header>
+
+      <section id="view-home" class="view active-view">
+        <div class="hero-grid">
+          <div class="hero-card">
+            <div class="hero-top">
+              <div>
+                <span class="live-pill"><i></i> LIVE PERSONALIZED VIEW</span>
+                <h2>29°<span>C</span></h2>
+                <p class="condition">Partly cloudy · Feels like 31°</p>
+                <p class="muted">Thursday, 10 September · Solapur</p>
+              </div>
+              <div class="sun-orbit">
+                <div class="sun-core">☀</div>
+                <div class="orbit-ring"></div>
+              </div>
+            </div>
+            <div class="hero-stats">
+              <div><span>Humidity</span><b>64%</b></div>
+              <div><span>Wind</span><b>14 km/h</b></div>
+              <div><span>UV</span><b class="warning">8 High</b></div>
+              <div><span>Rain</span><b>32%</b></div>
+            </div>
+          </div>
+
+          <div class="priority-card">
+            <div class="card-kicker">WHAT MATTERS MOST RIGHT NOW</div>
+            <div class="priority-main">
+              <div class="priority-icon">🏏</div>
+              <div>
+                <h3>Cricket practice is your top weather decision.</h3>
+                <p>Good outdoor window: <strong>4:15–5:40 PM</strong>. Heat drops after 4 PM, but rain risk rises after 6 PM.</p>
+              </div>
+            </div>
+            <div class="priority-footer">
+              <span class="confidence"><span></span> 92% recommendation confidence</span>
+              <button class="primary small" id="viewPlanBtn">View plan →</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">DYNAMIC WIDGET ENGINE</div>
+            <h2>Today, ranked for <span id="personaName">Student + Sports</span></h2>
+          </div>
+          <button class="ghost-btn" id="reRankBtn">↻ Re-rank widgets</button>
+        </div>
+
+        <div class="insight-banner" id="insightBanner">
+          <div class="banner-icon">✦</div>
+          <div><strong>Why this order?</strong><span id="whyOrder">Your sports preference + today's UV and rain pattern push outdoor timing to the top.</span></div>
+          <button class="text-btn" data-view="insights">See engine →</button>
+        </div>
+
+        <div class="widget-grid" id="widgetGrid"></div>
+      </section>
+
+      <section id="view-planner" class="view">
+        <div class="view-intro">
+          <div>
+            <div class="section-kicker">FORECAST → ACTION</div>
+            <h2>Your weather-aware day</h2>
+            <p>WeatherOS combines the forecast with your profile and turns it into decisions.</p>
+          </div>
+          <button class="primary" id="planAgainBtn">Generate new plan</button>
+        </div>
+        <div class="decision-strip">
+          <div class="decision-hero"><span>Best move today</span><strong id="bestMove">Play cricket before 6 PM</strong><small>Highest comfort + manageable rain risk</small></div>
+          <div><span>Risk window</span><strong>6:00–8:00 PM</strong><small>Heavy rain probability rising</small></div>
+          <div><span>Energy window</span><strong>Before 5 PM</strong><small>UV is still elevated after 5</small></div>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <section id="view-insights" class="view">
+        <div class="view-intro">
+          <div>
+            <div class="section-kicker">EXPLAINABLE PERSONALIZATION</div>
+            <h2>Why WeatherOS shows what it shows</h2>
+            <p>The prototype exposes the intelligence layer so an interviewer can understand the project in seconds.</p>
+          </div>
+          <button class="danger-btn" id="stormBtn">⚡ Simulate severe weather</button>
+        </div>
+        <div class="engine-map">
+          <div class="engine-node"><span>01</span><b>User profile</b><small>Student · cricket · commute · Solapur</small></div>
+          <div class="engine-arrow">→</div>
+          <div class="engine-node"><span>02</span><b>Forecast signals</b><small>Rain · UV · heat · wind · visibility</small></div>
+          <div class="engine-arrow">→</div>
+          <div class="engine-node"><span>03</span><b>Dynamic ranking</b><small>Scores each widget by relevance</small></div>
+          <div class="engine-arrow">→</div>
+          <div class="engine-node accent"><span>04</span><b>Recommendation</b><small>Forecast becomes a concrete action</small></div>
+        </div>
+        <div class="insight-columns">
+          <div class="panel">
+            <div class="panel-title"><span>Widget ranking score</span><span class="live-pill tiny">LIVE</span></div>
+            <div id="rankingBars"></div>
+          </div>
+          <div class="panel override-panel" id="overridePanel">
+            <div class="panel-title"><span>Safety override</span><span class="override-badge">NORMAL MODE</span></div>
+            <div class="override-content">
+              <div class="shield">🛡</div>
+              <div><h3>Personal preferences are secondary to safety.</h3><p>When severe weather crosses a threshold, the system automatically promotes safety alerts and suppresses risky recommendations.</p></div>
+            </div>
+            <button class="ghost-btn full" id="stormBtn2">Simulate threshold breach</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-profile" class="view">
+        <div class="view-intro">
+          <div>
+            <div class="section-kicker">ADAPTIVE USER PROFILE</div>
+            <h2>Teach WeatherOS what matters to you</h2>
+            <p>Changes here immediately re-rank the home dashboard in this prototype.</p>
+          </div>
+          <button class="primary" id="saveProfileBtn">Save preferences</button>
+        </div>
+        <div class="profile-layout">
+          <div class="profile-card-main">
+            <div class="profile-header"><div class="profile-avatar">O</div><div><h3>User</h3><p>Solapur · Student</p></div><span class="adaptive-badge">● Adaptive</span></div>
+            <div class="preference-group"><label>Primary identity</label><div class="chips" id="personaChips"></div></div>
+            <div class="preference-group"><label>What should WeatherOS prioritize?</label><div class="toggle-grid">
+              <label class="toggle-row"><span>🏏 Sports & outdoor activities</span><input type="checkbox" checked data-pref="sports"><i></i></label>
+              <label class="toggle-row"><span>🚗 Commute & road safety</span><input type="checkbox" checked data-pref="commute"><i></i></label>
+              <label class="toggle-row"><span>☀️ UV & heat</span><input type="checkbox" checked data-pref="uv"><i></i></label>
+              <label class="toggle-row"><span>☔ Rain alerts</span><input type="checkbox" checked data-pref="rain"><i></i></label>
+              <label class="toggle-row"><span>🌬 Air quality</span><input type="checkbox" data-pref="aqi"><i></i></label>
+              <label class="toggle-row"><span>📸 Photography conditions</span><input type="checkbox" data-pref="photo"><i></i></label>
+            </div></div>
+          </div>
+          <div class="profile-side">
+            <div class="panel adaptive-panel"><div class="panel-title"><span>Adaptive memory</span><span>↗</span></div><div class="memory-row"><b>Sports priority</b><span>High</span><div class="meter"><i style="width:92%"></i></div></div><div class="memory-row"><b>Commute priority</b><span>Medium</span><div class="meter"><i style="width:68%"></i></div></div><div class="memory-row"><b>UV sensitivity</b><span>High</span><div class="meter"><i style="width:81%"></i></div></div><p class="small-note">The prototype simulates learning from your selected interests and surfaces. A production system could update these weights from interaction history.</p></div>
+            <div class="panel"><div class="panel-title"><span>Profile presets</span></div><div class="preset-list"><button data-preset="student">🎓 Student + Sports</button><button data-preset="traveller">✈ Traveller</button><button data-preset="farmer">🌾 Farmer</button><button data-preset="commuter">🚗 Commuter</button><button data-preset="health">❤️ Health-focused</button></div></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="toast" id="toast"><span>✓</span><div><b id="toastTitle">Saved</b><small id="toastText">Preferences updated.</small></div></div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modalClose">×</button>
+      <div class="section-kicker">PROTOTYPE STORY</div>
+      <h2>Weather → context → action</h2>
+      <p class="modal-lead">This is the demo flow to show an interviewer. Click through the moments that prove this is not an ordinary weather app.</p>
+      <div class="tour-steps">
+        <div><span>01</span><b>Personalize</b><small>Select what the user cares about.</small></div>
+        <div><span>02</span><b>Rank</b><small>Widgets move based on relevance.</small></div>
+        <div><span>03</span><b>Recommend</b><small>Forecast is converted into a decision.</small></div>
+        <div><span>04</span><b>Override</b><small>Severe weather overrides preference ranking.</small></div>
+      </div>
+      <div class="modal-actions"><button class="ghost-btn" id="modalGoProfile">Show personalization</button><button class="primary" id="modalGoStorm">Show safety override →</button></div>
+    </div>
+  </div>
+
+  <script>
+const state = {
+  persona: 'student',
+  severe: false,
+  prefs: { sports: true, commute: true, uv: true, rain: true, aqi: false, photo: false }
+};
+
+const personas = {
+  student: {name:'Student + Sports', icon:'🎓', title:'Good evening, User.', priorityIcon:'🏏', priority:'Cricket practice is your top weather decision.', why:'Your sports preference + today’s UV and rain pattern push outdoor timing to the top.', move:'Play cricket before 6 PM'},
+  traveller: {name:'Traveller', icon:'✈️', title:'Trip conditions are looking manageable.', priorityIcon:'🧳', priority:'Your departure window is weather-safe — for now.', why:'Travel risk, rain timing and destination conditions are ranked above lifestyle widgets.', move:'Leave before the 6 PM rain window'},
+  farmer: {name:'Farmer', icon:'🌾', title:'Good evening. Your field plan is ready.', priorityIcon:'💧', priority:'Irrigation can wait — rain is arriving later.', why:'Rain probability + crop/irrigation relevance outrank UV and lifestyle widgets for a farmer profile.', move:'Delay irrigation until tomorrow'},
+  commuter: {name:'Commuter', icon:'🚗', title:'Your commute risk is currently low.', priorityIcon:'🚗', priority:'Evening visibility is the key travel decision.', why:'Route risk, visibility and rain probability dominate the widget ranking for a commuter.', move:'Start your return trip before 6 PM'},
+  health: {name:'Health-focused', icon:'❤️', title:'Your outdoor health window is closing.', priorityIcon:'❤️', priority:'UV + humidity make a later workout less comfortable.', why:'Health profile weights UV, humidity, AQI and heat stress above recreational widgets.', move:'Choose an indoor workout after 5 PM'}
+};
+
+const baseWidgets = [
+  {id:'sports', icon:'🏏', title:'Outdoor activity window', score:92, text:'4:15–5:40 PM is the best balance of temperature, UV and rain risk.', action:'Recommended: play before 6 PM'},
+  {id:'rain', icon:'☔', title:'Rain watch', score:86, text:'Rain probability rises from 32% now to 78% around 7 PM.', action:'Set a rain-ready plan'},
+  {id:'uv', icon:'☀️', title:'UV & heat', score:78, text:'UV is High. Exposure is manageable earlier, but heat discomfort rises after 4 PM.', action:'Hydrate + use shade'},
+  {id:'commute', icon:'🚗', title:'Commute risk', score:68, text:'Road conditions look normal now; visibility may drop during the rain window.', action:'Leave before 6 PM'},
+  {id:'aqi', icon:'🌬️', title:'Air quality', score:41, text:'AQI is 82 — acceptable for most people, but not ideal for prolonged exertion.', action:'Prefer shorter sessions'},
+  {id:'photo', icon:'📸', title:'Sky & photography', score:34, text:'Cloud cover is high, creating soft light around sunset.', action:'Best light: 6:05 PM'}
+];
+
+const rankings = {
+  student:['sports','rain','uv','commute','aqi','photo'],
+  traveller:['rain','commute','sports','uv','photo','aqi'],
+  farmer:['rain','sports','commute','uv','aqi','photo'],
+  commuter:['commute','rain','uv','sports','aqi','photo'],
+  health:['uv','aqi','rain','commute','sports','photo']
+};
+
+const widgetGrid = document.getElementById('widgetGrid');
+const rankingBars = document.getElementById('rankingBars');
+const timeline = document.getElementById('timeline');
+const app = document.querySelector('.main');
+
+function getRanking(){
+  let order = rankings[state.persona].slice();
+  if(state.prefs.photo && !order.includes('photo')) order.unshift('photo');
+  if(state.prefs.aqi){ order = ['aqi', ...order.filter(x=>x!=='aqi')]; }
+  if(state.prefs.rain){ order = ['rain', ...order.filter(x=>x!=='rain')]; }
+  if(state.prefs.uv){ order = ['uv', ...order.filter(x=>x!=='uv')]; }
+  // keep selected sports especially high for the student demo
+  if(state.persona==='student' && state.prefs.sports){ order = ['sports', ...order.filter(x=>x!=='sports')]; }
+  if(state.persona==='commuter' && state.prefs.commute){ order = ['commute', ...order.filter(x=>x!=='commute')]; }
+  if(state.severe) order = ['safety','commute','rain','uv','sports','aqi'];
+  return [...new Set(order)];
+}
+
+function widgetData(id){
+  if(id==='safety') return {id:'safety',icon:'⚡',title:'Severe weather override',score:100,text:'Thunderstorm risk crossed the safety threshold. Personal activity recommendations are temporarily suppressed.',action:'Priority: stay indoors'};
+  return baseWidgets.find(w=>w.id===id);
+}
+
+function renderHome(){
+  const p = personas[state.persona];
+  document.getElementById('pageTitle').textContent = p.title;
+  document.getElementById('personaName').textContent = p.name;
+  document.querySelector('.priority-icon').textContent = state.severe ? '⚡' : p.priorityIcon;
+  document.querySelector('.priority-main h3').textContent = state.severe ? 'Severe weather has overridden your usual priorities.' : p.priority;
+  document.querySelector('.priority-main p').innerHTML = state.severe ? '<strong>Thunderstorm warning</strong> is active from 5:30–8:00 PM. Your normal outdoor recommendation is paused for safety.' : `<strong>${p.move}</strong>. Heat, rain and your profile are being considered together.`;
+  document.getElementById('whyOrder').textContent = state.severe ? 'Safety override moved the severe-weather widget to rank #1 and suppressed risky outdoor actions.' : p.why;
+
+  const order = getRanking();
+  widgetGrid.innerHTML='';
+  order.forEach((id,i)=>{
+    const w = widgetData(id); if(!w) return;
+    const div = document.createElement('article');
+    div.className = 'widget ' + (i===0 ? 'primary-widget':'');
+    div.innerHTML = `<div class="widget-head"><div class="widget-icon">${w.icon}</div><span class="score-pill">RELEVANCE ${w.score}</span></div><h3>${w.title}</h3><p>${w.text}</p><div class="mini-bar"><i style="width:${w.score}%"></i></div><div class="widget-action">${w.action} →</div>`;
+    div.addEventListener('click',()=>showToast('Insight opened', `${w.title}: ${w.text}`));
+    widgetGrid.appendChild(div);
+  });
+  renderRanking(); renderTimeline();
+}
+
+function renderRanking(){
+  const order=getRanking();
+  rankingBars.innerHTML = order.map((id,idx)=>{const w=widgetData(id);return `<div class="rank-row"><label>${idx+1}. ${w.title}</label><div class="rank-track"><i style="width:${w.score}%"></i></div><span class="rank-score">${w.score}</span></div>`}).join('');
+}
+
+function renderTimeline(){
+  const p=personas[state.persona];
+  const items = state.severe ? [
+    ['5:15 PM','⚡','Severe weather warning','Thunderstorm risk crosses safety threshold.','STAY INDOORS'],
+    ['6:00 PM','🚗','Travel risk','Visibility and road risk increase.','DELAY / SHORTEN TRIP'],
+    ['7:00 PM','🏠','Indoor window','Best time for indoor work or recovery.','SAFE WINDOW']
+  ] : [
+    ['7:00 AM','🌤','Morning start','24°C · Lower UV · Best for a run or walk.','GOOD OUTDOORS'],
+    ['12:00 PM','☀️','Heat peak','29°C · UV 8 · Hydration recommended.','HYDRATE'],
+    ['4:15 PM','🏏',p.name==='Farmer'?'Field decision':'Outdoor activity','Best balance of comfort and weather for your profile.','BEST WINDOW'],
+    ['6:00 PM','🌧','Rain window','Rain probability rises quickly after 6 PM.','PLAN AHEAD'],
+    ['8:00 PM','🏠','Evening','Cooler, wetter conditions — move activities indoors.','LOW OUTDOOR VALUE']
+  ];
+  timeline.innerHTML=items.map(x=>`<div class="timeline-item"><div class="time">${x[0]}</div><div class="time-icon">${x[1]}</div><div><h4>${x[2]}</h4><p>${x[3]}</p></div><div class="timeline-action">${x[4]} ↗</div></div>`).join('');
+  document.getElementById('bestMove').textContent = state.severe ? 'Stay indoors during the storm' : p.move;
+}
+
+function showView(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active-view'));
+  document.getElementById('view-'+view).classList.add('active-view');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
+  const labels={home:['PERSONAL WEATHER OPERATING SYSTEM',personas[state.persona].title],planner:['FORECAST → ACTION','Your weather-aware day'],insights:['EXPLAINABLE PERSONALIZATION','See the intelligence layer'],profile:['ADAPTIVE USER PROFILE','Teach WeatherOS what matters']};
+  document.getElementById('pageEyebrow').textContent=labels[view][0];
+  document.getElementById('pageTitle').textContent=labels[view][1];
+  if(view==='home') renderHome();
+}
+
+document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>showView(btn.dataset.view)));
+document.querySelectorAll('[data-view]').forEach(el=>{ if(!el.classList.contains('nav-item')) el.addEventListener('click',()=>showView(el.dataset.view)); });
+
+document.getElementById('viewPlanBtn').addEventListener('click',()=>showView('planner'));
+document.getElementById('reRankBtn').addEventListener('click',()=>{ showToast('Widgets re-ranked','The engine recalculated relevance from the active profile.'); renderHome(); });
+document.getElementById('planAgainBtn').addEventListener('click',()=>{ renderTimeline(); showToast('Plan regenerated','The recommendation engine rebuilt today’s actions.'); });
+document.getElementById('notifBtn').addEventListener('click',()=>showToast('1 important alert','Rain risk increases around 7 PM.'));
+document.getElementById('locationBtn').addEventListener('click',()=>showToast('Demo location','Prototype is using Solapur, Maharashtra.'));
+document.getElementById('avatarBtn').addEventListener('click',()=>showView('profile'));
+
+function applyPersona(key){
+  state.persona=key;
+  const p=personas[key];
+  document.querySelectorAll('.persona-chip').forEach(c=>c.classList.toggle('active',c.dataset.persona===key));
+  showToast('Profile switched',`${p.name} is now active. Widgets will re-rank.`);
+  state.severe=false; app.classList.remove('severe-mode');
+  renderHome();
+}
+
+function setupProfile(){
+  const wrap=document.getElementById('personaChips');
+  wrap.innerHTML=Object.entries(personas).map(([k,p])=>`<button class="persona-chip ${k===state.persona?'active':''}" data-persona="${k}">${p.icon} ${p.name}</button>`).join('');
+  wrap.querySelectorAll('.persona-chip').forEach(c=>c.addEventListener('click',()=>applyPersona(c.dataset.persona)));
+  document.querySelectorAll('.toggle-row input').forEach(inp=>inp.addEventListener('change',()=>{ state.prefs[inp.dataset.pref]=inp.checked; }));
+  document.querySelectorAll('.preset-list button').forEach(b=>b.addEventListener('click',()=>applyPersona(b.dataset.preset)));
+}
+
+document.getElementById('saveProfileBtn').addEventListener('click',()=>{ renderHome(); showToast('Profile updated','Adaptive priorities are now reflected on Today.'); });
+
+function toggleStorm(){
+  state.severe=!state.severe; app.classList.toggle('severe-mode',state.severe);
+  document.getElementById('stormBtn').textContent = state.severe ? '✓ Severe weather active' : '⚡ Simulate severe weather';
+  document.getElementById('stormBtn2').textContent = state.severe ? 'Restore normal ranking' : 'Simulate threshold breach';
+  document.querySelector('.override-badge').textContent = state.severe ? 'OVERRIDE ACTIVE' : 'NORMAL MODE';
+  renderHome(); renderRanking(); renderTimeline();
+  showToast(state.severe?'Safety override triggered':'Normal ranking restored', state.severe?'Severe weather has jumped to rank #1.':'Personal ranking is active again.');
+}
+document.getElementById('stormBtn').addEventListener('click',toggleStorm);
+document.getElementById('stormBtn2').addEventListener('click',toggleStorm);
+
+function showToast(title,text){const t=document.getElementById('toast');document.getElementById('toastTitle').textContent=title;document.getElementById('toastText').textContent=text;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),3300)}
+
+const backdrop=document.getElementById('modalBackdrop');
+document.getElementById('tourBtn').addEventListener('click',()=>backdrop.classList.remove('hidden'));
+document.getElementById('modalClose').addEventListener('click',()=>backdrop.classList.add('hidden'));
+document.getElementById('modalGoProfile').addEventListener('click',()=>{backdrop.classList.add('hidden');showView('profile')});
+document.getElementById('modalGoStorm').addEventListener('click',()=>{backdrop.classList.add('hidden');showView('insights'); if(!state.severe) toggleStorm();});
+
+setupProfile();
+renderHome();
+
+</script>
+</body>
+</html>
